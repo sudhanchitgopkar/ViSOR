@@ -1,48 +1,56 @@
+/* USER PARAMETERS*/
+char ROTAXIS = 'x';           //OPTIONS: x OR y
+final float END_PLANE = 7*PI; //RAIDUS OF COORD PLANE
+final float DELTA_R = 0.1;    //REVOLN PRECISION (HIGHER = WORSE)
+final float FR = 60;          //FRAME RATE
+
+/* GENERAL GLOBAL VARS */
 float inc = 0;
 float inc2 = 0;
-float v = 0;
+final int PADDING = 300;
 boolean isPaused = false;
 float pauseVal = 0;
-
-char ROTAXIS = 'y';
-final int PADDING = 300;
-final float END_PLANE = 4*PI;
-//y=x.y=x^2,y=x^2/3+5.sing(x)
 ArrayList <PShape> shapes = new ArrayList <PShape>();
 
+/** FUNCTION TO GRAPH
+   @param x input val
+*/
 float f(float x) {
-  float y = x * sin(x);
+  float y = x*tan(x);
   return -1 * map(y,0,END_PLANE,0,height/2);
 } //f
 
 void setup() {
-  fullScreen(P3D);
-  translate(width/2,height/2);
+  fullScreen(P3D); 
+  frameRate(FR);
+  translate(width/2,height/2); 
   background(0);
   stroke(255);
-  
 } //setup
 
 void draw() {
-  camera(map(mouseX,0,width,-width ,width), map(mouseY,0,height,-height/2 - PADDING ,height/2 + PADDING), (height/2.0) / tan(PI*30.0 / 180.0), 
-  width/2.0, height/2.0, 0, 0, 1, 1);
-  translate(width/2,height/2);
-  inc += 0.010;
-  
+  camera(map(mouseX,0,width,-width ,width), map(mouseY,0,height,-height/2 - PADDING ,height/2 + PADDING), 
+  (height/2.0) / tan(PI*30.0 / 180.0), width/2.0, height/2.0, 0, 0, 1, 1); //user-defined mouse control
+  translate(width/2,height/2); 
+  background(0); //refresh background
+  inc += 0.010; 
+
+  //AXIS ANIMATION
   pushMatrix();
-  background(0);
   keyPressed();
-  //if(!mousePressed)rotateY(inc);
-  if (ROTAXIS == 'x') rotateX(inc);
-  else rotateY(inc);
+  if(!mousePressed) //stop axis rotation on mouseDown
+    if (ROTAXIS == 'x') rotateX(inc);
+    else rotateY(inc);
   plotAxes();
   popMatrix();
   
+  //FACE REVOLUTION
   pushMatrix();
   plotFunc(inc2);
-  if (inc2 < TWO_PI) inc2+=0.1;
+  if (inc2 < TWO_PI) inc2 += DELTA_R;
   popMatrix();
   
+  //FACE DRAWING
   for (PShape p : shapes) 
     shape(p);
 } //draw;
@@ -53,19 +61,19 @@ PShape plotFunc(float rot) {
   PShape s = createShape();
   //s.setFill(color(255,255,0,100));
   s.beginShape();
-  //s.noStroke();
   s.noFill();
   s.strokeWeight(1);
   s.stroke(255,109,109,255);
 
+  //ADD VERTICES ALONG FUNCTION
   for (float i = .001; i < END_PLANE; i+=0.01) {
     if (f(i) >= -height/2+PADDING && f(i) <= 0) {
       s.vertex(map(i,0,END_PLANE,0,width/2 - PADDING),f(i),0);
       end.set(map(i,0,END_PLANE,0,width/2 - PADDING),f(i));
-      v += f(i) * 0.001;
     } //if
   } //for
   
+  //CLOSE SHAPE ON AXES
   if (ROTAXIS == 'x') {
     s.vertex(end.x,0,0);
     s.vertex(0,0,0);
@@ -73,37 +81,37 @@ PShape plotFunc(float rot) {
     s.vertex(0,end.y,0);
     s.vertex(0,f(0),0);
   } //if
-  
   s.endShape(CLOSE);
+  
+  //ROTATE FACE
   if (ROTAXIS == 'x') s.rotateX(rot);
   else s.rotateY(rot);
+  
   shapes.add(s);
   return s;
 } //plotFunc
 
 void plotAxes() {
   strokeWeight(2);
-  stroke(255,0,0);
+  stroke(255,0,0); //X = R
   line(-END_PLANE - PADDING,0,0,END_PLANE + PADDING,0,0);
-  stroke(0,255,0);
+  stroke(0,255,0); //Y = B
   line(0,-END_PLANE - PADDING,0,0,END_PLANE + PADDING,0);
-  stroke(0,0,255);
+  stroke(0,0,255); //Z = G
   line(0,0,-END_PLANE - PADDING,0,0,END_PLANE + PADDING);
   strokeWeight(1);
 } //plotA
 
-void mousePressed() {
-  shapes =  new ArrayList <PShape>();
-  inc2 = 0;
-}
 
 void keyReleased() {
+   //REFRESH ANIM
    if (key == 'r') { 
      shapes =  new ArrayList <PShape>();
      inc2 = 0;
      isPaused = false;
+   //PAUSE ANIM
    } else if (key == 'p') {
       if (isPaused) {isPaused = false; inc2 = pauseVal;}
       else {isPaused = true; pauseVal = inc2;inc2 = 100000;}
-   }
-}
+   } //if
+} //keyReleased
