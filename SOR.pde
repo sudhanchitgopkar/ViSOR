@@ -1,13 +1,13 @@
 /* USER PARAMETERS*/
-char ROTAXIS = 'x';           //OPTIONS: x OR y
-final float END_PLANE = 7*PI; //RAIDUS OF COORD PLANE
-final float DELTA_R = 0.1;    //REVOLN PRECISION (HIGHER = WORSE)
+char ROTAXIS = 'y';           //OPTIONS: x OR y
+final float END_PLANE = 10; //RAIDUS OF COORD PLANE
+final float DELTA_R = 0.02;    //REVOLN PRECISION (HIGHER = WORSE)
 final float FR = 60;          //FRAME RATE
 
 /* GENERAL GLOBAL VARS */
 float inc = 0;
 float inc2 = 0;
-final int PADDING = 300;
+final int PADDING = 0;
 boolean isPaused = false;
 float pauseVal = 0;
 ArrayList <PShape> shapes = new ArrayList <PShape>();
@@ -16,11 +16,13 @@ ArrayList <PShape> shapes = new ArrayList <PShape>();
    @param x input val
 */
 float f(float x) {
-  float y = x*tan(x);
+  float y = sin(x);
   return -1 * map(y,0,END_PLANE,0,height/2);
 } //f
 
 void setup() {
+  colorMode(HSB);
+  strokeWeight(2);
   fullScreen(P3D); 
   frameRate(FR);
   translate(width/2,height/2); 
@@ -41,7 +43,7 @@ void draw() {
   if(!mousePressed) //stop axis rotation on mouseDown
     if (ROTAXIS == 'x') rotateX(inc);
     else rotateY(inc);
-  plotAxes();
+  //plotAxes();
   popMatrix();
   
   //FACE REVOLUTION
@@ -59,15 +61,16 @@ PShape plotFunc(float rot) {
   PVector end = new PVector(END_PLANE,END_PLANE);
   
   PShape s = createShape();
-  //s.setFill(color(255,255,0,100));
+  //s.setFill(color(255,80,80,100));
   s.beginShape();
   s.noFill();
   s.strokeWeight(1);
-  s.stroke(255,109,109,255);
-
+  //s.stroke(map(rot,0,TWO_PI,0,255),109,109,255);
+  s.strokeWeight(2);
   //ADD VERTICES ALONG FUNCTION
   for (float i = .001; i < END_PLANE; i+=0.01) {
     if (f(i) >= -height/2+PADDING && f(i) <= 0) {
+      s.stroke(map(i,0.001,END_PLANE,0,255),map(i,0.001,END_PLANE,255,100),map(i,0.001,END_PLANE,255,100));
       s.vertex(map(i,0,END_PLANE,0,width/2 - PADDING),f(i),0);
       end.set(map(i,0,END_PLANE,0,width/2 - PADDING),f(i));
     } //if
